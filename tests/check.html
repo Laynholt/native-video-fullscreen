@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>Native Video Fullscreen smoke test</title>
+<style>
+  body { margin: 20px; min-height: 180vh }
+  video { display: block; background: #252945; margin: 12px 0 }
+</style>
+<p>Проверка интерфейса. У первого видео нажмите ⛶. Статус должен стать PASS.</p>
+<output id="result">WAITING</output>
+<video id="main" width="320" height="180"></video>
+<video id="other" width="400" height="225"></video>
+<script>
+  // The WebKit fullscreen API is simulated here. The click itself must be trusted.
+  const main = document.querySelector('#main');
+  const other = document.querySelector('#other');
+  const result = document.querySelector('#result');
+  let calls = 0;
+
+  function mockVideo(video, paused) {
+    Object.defineProperties(video, {
+      paused: { value: paused },
+      videoWidth: { value: 640 },
+      webkitSupportsFullscreen: { value: true },
+    });
+  }
+
+  Object.defineProperty(HTMLVideoElement.prototype, 'webkitEnterFullscreen', {
+    value() {
+      if (++calls !== 1 || this !== main || !navigator.userActivation.isActive) {
+        result.value = 'FAIL';
+        return;
+      }
+      result.value = 'PASS';
+    },
+  });
+  mockVideo(main, false);
+  mockVideo(other, true);
+</script>
+<script src="../native-video-fullscreen.user.js"></script>
+</html>
